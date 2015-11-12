@@ -1,6 +1,6 @@
 from pyramid.exceptions import ConfigurationError
 from pyramid.settings import asbool
-from pymongo import Connection
+from pymongo import MongoClient
 import logging
 log = logging.getLogger(__name__)
 
@@ -9,7 +9,6 @@ MONGOENGINE = 'mongo.mongoengine'
 USERNAME = 'mongo.username'
 PASSWORD = 'mongo.password'
 DBNAME = 'mongo.db'
-GREENLETS = 'mongo.use_greenlets'
 
 
 def get_connection(config, conn_cls=None):
@@ -18,16 +17,15 @@ def get_connection(config, conn_cls=None):
        to a string separated by new lines for each server. 
 
        The uri must be of a form acceptable by mongodb. 
-       http://www.mongodb.org/display/DOCS/Connections
+       http://api.mongodb.org/python/current/api/pymongo/mongo_client.html#pymongo.mongo_client.MongoClient
     """
 
     if conn_cls is None:
-        conn_cls = Connection
+        conn_cls = MongoClient
         
     registry = config.registry
 
     uri = registry.settings.get(URI)
-    greenlets = registry.settings.get(GREENLETS)
 
     if uri is None:
         raise ConfigurationError('There is no configured "mongo.uri"')
@@ -36,11 +34,7 @@ def get_connection(config, conn_cls=None):
     if not isinstance(uri, list):
         uri = uri.splitlines()
 
-    kargs = {
-        'use_greenlets':  asbool(greenlets)
-    }
-
-    return conn_cls(uri, **kargs)
+    return conn_cls(uri)
 
 def get_db(request, name=None):
     """get_db opens a handle for a database using a connection.
