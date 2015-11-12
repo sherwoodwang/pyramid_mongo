@@ -90,12 +90,6 @@ def get_db(request, name=None):
     if not username is None and not password is None:
         db.authenticate(username, password)
 
-    def end_request(request):
-        db.logout()
-        db.connection.end_request() 
-
-    request.add_finished_callback(end_request)
-
     return db
 
 def setup_mongoengine(config):
